@@ -1,0 +1,15 @@
+const x = 121;
+const y = 122;
+const z = 123;
+var a;
+var b;
+var c;
+begin
+  if d = eId
+  then
+    f := x
+  else
+    f := y
+end
+.
+hw3-declerrtest5.pl0: line 5, column 8: identifer "d" is not declared!

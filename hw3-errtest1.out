@@ -1,0 +1,1 @@
+hw3-errtest1.pl0: line 4, column 3: Expecting a endsym token, but saw a writesym token ("write")

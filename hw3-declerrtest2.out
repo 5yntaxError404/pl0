@@ -1,0 +1,10 @@
+const nl = 10;
+const x = 120;
+const y = 121;
+const x = 170;
+begin
+  write y;
+  write nl
+end
+.
+hw3-declerrtest2.pl0: line 3, column 25: constant "x" is already declared as a constant

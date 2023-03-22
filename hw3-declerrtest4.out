@@ -1,0 +1,9 @@
+const x = 121;
+const y = 122;
+const z = 123;
+var a;
+var y;
+var c;
+skip
+.
+hw3-declerrtest4.pl0: line 3, column 8: variable "y" is already declared as a constant

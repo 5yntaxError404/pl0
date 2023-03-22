@@ -1,0 +1,6 @@
+var x;
+var y;
+var x;
+x := 7
+.
+hw3-declerrtest1.pl0: line 2, column 11: variable "x" is already declared as a variable

@@ -1,0 +1,19 @@
+const a = 3;
+const b = 4;
+const c = 5;
+const d = 6;
+const e = 7;
+const f = 8;
+const g = 9;
+var q;
+var r;
+var s;
+var t;
+var u;
+var v;
+var w;
+var x;
+var y;
+var z;
+x := 0
+.

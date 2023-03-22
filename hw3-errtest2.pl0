@@ -1,0 +1,5 @@
+# $Id: hw3-errtest2.pl0,v 1.1 2023/02/14 22:35:08 leavens Exp $
+begin
+  write 49;
+  .
+end.
