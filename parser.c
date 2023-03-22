@@ -167,7 +167,7 @@ static AST_list parseConsts()
     }
     return constHead;
 }
-
+// Parses indents for constant symbols returning the head of an AST_list
 static AST_list parseIdents_CONST()
 {
     token ident_tok = tok;

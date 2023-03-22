@@ -20,13 +20,13 @@ void eat(token_type token);
 // Parses the input source and generates an AST for the entire program.
 AST *parseProgram();
 
-// Parses the variable declarations and generates an AST for them.
+// Parses the variable declarations and generates an AST list for them.
 static AST_list parseVars();
 
-// Generates an AST for a variable declaration.
+// Generates an AST list for indents with variable declarations.
 static AST_list parseIdents_VAR(var_decl_t var);
 
-// Parses the constant declarations and generates an AST for them.
+// Parses the constant declarations and generates an AST list for them.
 static AST_list parseConsts();
 
 
@@ -58,7 +58,7 @@ AST *parseIfStmt();
 // Parses an assignment statement and generates an AST for it.
 static AST* parseAssignStmt();
 
-// Parses a begin statement and generates an AST for it.
+// Parses a begin statement and generates an AST list for it.
 static AST_list parseBeginStmt();
 
 // Parses a while loop statement and generates an AST for it.
@@ -99,14 +99,14 @@ static AST *parseTerm();
 // constructs an AST node representing the signed term. The function returns a pointer to the constructed AST node.
 static AST *parseSign();
 
-void printList(AST_list);
-
+// initalize the parser for some file "filename"
 void parser_open(const char *filename);
 
+// close the parser which also closes the lexer.
 void parser_close();
 
+// returns true if the given node is a valid statement beginning token.
 static bool is_stmt_beginning_token(token t);
 
+// creates an ast_list of indent expressions with constants.
 static AST_list parseIdents_CONST();
-
-static void usage(const char*);

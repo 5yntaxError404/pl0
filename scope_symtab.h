@@ -9,6 +9,7 @@
 #include "utilities.h"
 #include "scope_check.h"
 #include "type_attrs.h"
+
 // Maximum number of declarations that can be stored in a scope
 #define MAX_SCOPE_SIZE 4096
 
