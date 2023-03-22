@@ -1,0 +1,1 @@
+hw3-parseerrtest2.pl0: line 4, column 3: syntax error, Expecting one of: identsym, beginsym, ifsym, whilesym, readsym, writesym or skipsym, but saw a periodsym token (".")
