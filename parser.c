@@ -1,4 +1,6 @@
 // Daniel Correa and David Umanzor
+// Cited From Float Language
+// Talked conceptually with Group 25 - HagMik
 // Parser and Declaration Checker.c
 #include "parser.h"
 #include <stdio.h>

@@ -1,31 +1,27 @@
-/* $Id: scope_symtab.c,v 1.2 2023/02/22 03:33:43 leavens Exp $ */
+// Daniel Correa and David Umanzor
+// Cited From Float Language
+// Talked conceptually with Group 25 - HagMik
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include "scope_symtab.h"
 
-
 typedef struct {
     const char *id;
     id_attrs *attrs;
 } symtab_assoc_t;
 
-// Invariant: 0 <= size < MAX_SCOPE_SIZE;
 typedef struct scope_symtab_s {
     unsigned int size;
     symtab_assoc_t *entries[MAX_SCOPE_SIZE];
 } scope_symtab_t;
 
-// The current scope (i.e., the symbol table)
-// Idea: size is the index into entries
-// of the most recent symtab_assoc added to the list of entries.
-// So the next entry goes into the index size+1
+// The current scope
 static scope_symtab_t *symtab = NULL;
 
-// Allocate a fresh scope symbol table and return (a pointer to) it.
-// Issues an error message (on stderr) if there is no space
-// and exits with a failure error code in that case.
+// Allocates the memory for a new scope symbol table
+// returns an error message if there is no space and exits the code
 static scope_symtab_t * scope_create()
 {
     scope_symtab_t *new_scope =  malloc(sizeof(scope_symtab_t));
@@ -43,35 +39,32 @@ static scope_symtab_t * scope_create()
 // initialize the symbol table for the current scope
 void scope_initialize()
 {
-    // create the scope and assign it to the global symtab
+    // assigns the scope to the global symtab
     symtab = scope_create();
 }
 
 // Return the current scope's next offset to use for allocation,
-// which is the size of the current scope (number of declared ids).
+// which is the size of the current scope.
 unsigned int scope_size()
 {
     return symtab->size;
 }
 
-// Is the current scope full?
+// Is the scope at max size
 bool scope_full()
 {
     return scope_size() >= MAX_SCOPE_SIZE;
 }
 
-// Requires: assoc != NULL && !scope_full() && !scope_defined(assoc->id);
-// Add an association from the given name to the given id attributes
-// in the current scope.
+// Add an association from the given name to the given id
 static void scope_add(symtab_assoc_t *assoc)
 {
     symtab->entries[symtab->size] = assoc;
     symtab->size++;
 }
 
-// Requires: !scope_defined(name) && attrs != NULL;
-// Modify the current scope symbol table to
-// add an association from the given name to the given id_attrs attrs.
+// Modify the current scope symbol table to hold a new association
+// if there is not enough room return and error and exit the code.
 void scope_insert(const char *name, id_attrs *attrs)
 {   
     symtab_assoc_t *new_assoc = malloc(sizeof(symtab_assoc_t));
@@ -83,7 +76,6 @@ void scope_insert(const char *name, id_attrs *attrs)
     scope_add(new_assoc);
 }
 
-// Requires: name != NULL;
 // Is the given name associated with some attributes in the current scope?
 bool scope_defined(const char *name)
 {
@@ -92,9 +84,8 @@ bool scope_defined(const char *name)
     return scope_lookup(name) != NULL;
 }
 
-// Requires: name != NULL and scope_initialize() has been called previously.
-// Return (a pointer to) the attributes of the given name in the current scope
-// or NULL if there is no association for name.
+// Return the attribute attached to some name in the current scope
+// or NULL if none can be found
 id_attrs *scope_lookup(const char *name)
 {
     int i;
