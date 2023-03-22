@@ -5,28 +5,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-
-//static FILE *input_file = NULL;
-
 // The input file's name
+
 static char *filename = NULL;
 static token tok;
 static unsigned int scope_offset;
 
-static void usage(const char* cmdname)
-{
-    fprintf(stderr, "Usage: %s [-l] code-filename\n", cmdname);
-    exit(EXIT_FAILURE);
-}
-
 int main(int argc, char *argv[])
 {   
-    
     const char *cmdname = argv[0];
     int filename_index = 1;
     bool produce_lexer_output = false;
     
+    // based on number of arguments the filename index will differ
     if ( argc >= 2 && strcmp(argv[1],"-l") == 0 ) 
     {
         produce_lexer_output = true;
@@ -34,19 +25,17 @@ int main(int argc, char *argv[])
     }
     else if ( argc == 2 )
         filename_index = 1;
-    
 
+    // if true use Lexer functions
     if (produce_lexer_output) {
         filename = argv[filename_index];
         lexer_open(filename);
         lexer_output();
         lexer_close();
-        
     }
-    
     else
     {
-        
+        // otherwise run parser like normal
         filename = argv[1];
         parser_open(filename);
         AST *progast = parseProgram();
@@ -56,9 +45,10 @@ int main(int argc, char *argv[])
         scope_initialize();
         scope_check_program(progast);
     }
-
     return EXIT_SUCCESS;
 }
+
+// ---------- PARSER OPERATION FUNCTIONS ----------
 
 // initialize the parser to work on the given file
 void parser_open(const char *filename)
@@ -74,12 +64,15 @@ void parser_close()
     lexer_close();
 }
 
+// advance the parser and update the token
 static void advance() 
 {
     if (!lexer_done())
         tok = lexer_next();
 }
 
+// Checks if the next token in the input source is of the expected token type and consumes it.
+// If invalid token, throws error.
 void eat(token_type tt) 
 {
     token_type expected[1] = {tt}; 
@@ -90,15 +83,15 @@ void eat(token_type tt)
         parse_error_unexpected(expected, 1, tok);
  }
 
-// BEGIN AST LIST FUNCS
+// ------------- BEGIN AST LIST FUNCS -------------------------
 
 AST *parseProgram()
 {
-    
+    // create AST lists of constants, vars, and an AST stmts for processing
     AST_list consts = parseConsts();
     AST_list vars = parseVars();
     AST *stmt = parseStmt();
-    
+    // after completed eat end of file sym
     eat(periodsym);
     eat(eofsym);
 
@@ -116,10 +109,12 @@ AST *parseProgram()
     return ast_program(filename,f_locate.line,f_locate.column,consts,vars,stmt);
 }
 
+
 static AST_list parseVars()
 {
+    // create a empty list for the head and tail of the variable list
     AST_list varHead = ast_list_empty_list(), varTail = ast_list_empty_list();
-
+    // while there are varsym tokens keep adding them inserting at the back of the list
     while (tok.typ == varsym)
     {
         AST_list varASTs;
@@ -132,15 +127,13 @@ static AST_list parseVars()
             eat(semisym);
             AST_insert_back(&varHead,&varTail,varASTs);
         }
-            
-        
     }
-
     return varHead;
 }
 
 static AST_list parseIdents_VAR(var_decl_t var)
 {
+    // create an list for indents based on the var head and tail
     token ident_tok = tok;
     eat(identsym);
     AST_list varHead = ast_list_singleton(ast_var_decl(ident_tok, ident_tok.text));
@@ -159,8 +152,9 @@ static AST_list parseIdents_VAR(var_decl_t var)
 
 static AST_list parseConsts()
 {
+    // create an empty list for the head and tail of the constant list
     AST_list constHead = ast_list_empty_list(), constTail = ast_list_empty_list();
-
+    // while there are constsym tokens keep adding them inserting at the back of the list
     while (tok.typ == constsym)
     {
         eat(constsym);
@@ -180,10 +174,12 @@ static AST_list parseIdents_CONST()
 
     token const_val = tok;
     eat(numbersym);
-
+    
+    // creates head and tail of the AST_list for const within the indents, setting the head equal to the tail
     AST_list constHead = ast_list_singleton(ast_const_def(ident_tok,ident_tok.text,const_val.value));
     AST_list constTail = constHead;
 
+    // while token type is equal to the commasym, build the rest of the AST_list inserting from the back
     while (tok.typ == commasym)
     {
         eat(commasym);
@@ -200,6 +196,7 @@ static AST_list parseIdents_CONST()
     return constHead;    
 }
 
+// This function inserts the ast to the back of the list making the oldest AST the head and the newest AST the tail
 static void AST_insert_back(AST_list *head, AST_list *tail, AST_list list)
 {
     if (!ast_list_is_empty(*head))
@@ -214,34 +211,36 @@ static void AST_insert_back(AST_list *head, AST_list *tail, AST_list list)
     }
 }
 
-// BEGIN PARSE STMTS
+// ---------------- BEGIN PARSE STMTS ------------------
+
 AST *parseStmt()
 {
     AST *ret = NULL;
-    
-            
+
+    // Check for a match in any of the valid token types
+    // Parse based on token type found otherwise exit from invalid token
     switch (tok.typ) 
     {
         case identsym:
-            ret = parseAssignStmt(); // NOT FINISHED
+            ret = parseAssignStmt();
             break;
         case beginsym:
-            ret = parseBeginStmt(); // NOT FINISHED
+            ret = parseBeginStmt();
             break;
         case ifsym:
-            ret = parseIfStmt(); // NOT FINISHED
+            ret = parseIfStmt();
             break;
         case whilesym:
-            ret = parseWhileStmt(); // NOT FINISHED
+            ret = parseWhileStmt();
             break;
         case readsym:
-            ret = parseReadStmt(); // NOT FINISHED
+            ret = parseReadStmt();
             break;
         case writesym:
-            ret = parseWriteStmt(); // NOT FINISHED
+            ret = parseWriteStmt();
             break;
         case skipsym:
-            ret = parseSkipStmt(); // NOT FINISHED
+            ret = parseSkipStmt();
             break;
 
         // ... other cases of expected tokens...
@@ -258,10 +257,7 @@ AST *parseStmt()
     return ret;
 }
 
-
-
-// *** PARSING EXPRESSIONS ***
-
+// ------------------------- PARSING EXPRESSIONS ------------------------
 
 AST *parseExpression()
 {
@@ -275,8 +271,10 @@ AST *parseExpression()
    return expr;
 }
 
-
-static AST *parseTerm() // its gonna say unused until we figure out neg ASTs
+// parses a term in an arithmetic expression. 
+// It looks for a factor, possibly followed by zero or more multsym or divsym operators and factors, and 
+// constructs an AST node representing the term.
+static AST *parseTerm()
 {
     token exp_tok = tok;
     AST *factor = parseFactor();
@@ -289,10 +287,11 @@ static AST *parseTerm() // its gonna say unused until we figure out neg ASTs
     return expr;
 } 
 
+// parse for addition or subtraction operations and create AST operation expression, 
+// if non found invalid parse operation
 static AST *parseAddSubTerm()
 {
     token op = tok;
-    
     AST *expr;
 
     switch(tok.typ)
@@ -312,12 +311,13 @@ static AST *parseAddSubTerm()
             token_type expected[2] = {plussym, minussym};
             parse_error_unexpected(expected, 2, tok);
         }
-            
             break;
     }
     return (AST *) NULL;
 }
 
+// parse for multiplication or division operations and create AST operation expression, 
+// if non found invalid parse operation
 static AST *parseMultDivFactor()
 {
     token op = tok;
@@ -346,11 +346,9 @@ static AST *parseMultDivFactor()
     return (AST *) NULL;
 }
 
-
 static AST *parseFactor()
 {
-    
-
+// check token type for indents, if or while, numbers, or minus symbols
     switch (tok.typ) 
     {
         case identsym:
@@ -383,12 +381,13 @@ static AST *parseIdentExpr()
     return ast_ident(id_tok,id_tok.text);
 }
 
+// parse number expression and build an AST
 static AST *parseNumExpr()
 {
     token num_tok;
     int val;
 
-    if(tok.typ == minussym)
+    if(tok.typ == minussym) // based on if its a minus sym set the value to negative
     {
         eat(minussym);
         num_tok = tok;
@@ -396,8 +395,7 @@ static AST *parseNumExpr()
         val = num_tok.value;
         val = -val;
     }
-
-    else
+    else // otherwise eat the numbersym and store like normal
     {
         num_tok = tok;
         eat(numbersym);
@@ -406,7 +404,8 @@ static AST *parseNumExpr()
     return ast_number(num_tok,val);
 }
 
-static AST *parseParenExpr() // may wanna check this one later
+
+static AST *parseParenExpr()
 {
     token par_tok = tok;
     eat(lparensym);
@@ -416,7 +415,7 @@ static AST *parseParenExpr() // may wanna check this one later
     return ret;
 }
 
-// END OF PARSE EXPR FUNCTIONS
+// ------------------------ END OF PARSE EXPR FUNCTIONS ----------------------------
 
 AST *parseCondition()
 {
@@ -430,7 +429,6 @@ AST *parseCondition()
         AST *oddExp =  parseExpression();
         ret = ast_odd_cond(tok, oddExp);
     } 
-         
     else
     {
         AST *L_Exp = parseExpression();
@@ -472,7 +470,8 @@ AST *parseCondition()
     return ret;    
 }
 
-AST *parseIfStmt() // In theory this works, Dunno its Leavens code - David
+// parse if statement and build an AST
+AST *parseIfStmt()
 {
     token ift = tok;
     eat(ifsym);
@@ -484,7 +483,8 @@ AST *parseIfStmt() // In theory this works, Dunno its Leavens code - David
     return ast_if_stmt(ift, cond, thenstmt, elsestmt);
 }
 
-AST *parseAssignStmt() // Unfinished
+// parse indentity statement and build an AST
+AST *parseAssignStmt()
 {
     token ident_token = tok;
     eat(identsym);
@@ -495,11 +495,13 @@ AST *parseAssignStmt() // Unfinished
     return ast_assign_stmt(ident_token, ident_token.text, exp);
 }
 
+// Valid tokens that can begin a statement
 #define STMTBEGINTOKS 7
 static token_type can_begin_stmt[STMTBEGINTOKS] =
 	    {identsym, whilesym, ifsym, readsym, writesym, beginsym, skipsym};
 
-AST *parseBeginStmt() // Unfinished
+// parse begin statement returning a begin AST
+AST *parseBeginStmt()
 {
     token begin_tok = tok;
     eat(beginsym);
@@ -520,6 +522,7 @@ AST *parseBeginStmt() // Unfinished
     return begin_ret;
 }
 
+// return true if token is a valid beginning token, otherwise false
 static bool is_stmt_beginning_token(token t)
 {
     
@@ -531,7 +534,8 @@ static bool is_stmt_beginning_token(token t)
     return false;
 }
 
-AST *parseWhileStmt() // Unfinished
+// parse while statement and build an AST
+AST *parseWhileStmt()
 {
     token while_token = tok;
     eat(whilesym);
@@ -542,7 +546,8 @@ AST *parseWhileStmt() // Unfinished
     return ast_while_stmt(while_token, cond, body);
 }
 
-AST *parseReadStmt() // Unfinished
+// parse read statement and build an AST
+AST *parseReadStmt()
 {
     token read = tok;
     eat(readsym);
@@ -552,6 +557,7 @@ AST *parseReadStmt() // Unfinished
     return ast_read_stmt(read, name);
 }
 
+// parse write statement and build an AST
 AST *parseWriteStmt() 
 {
     token write = tok;
@@ -562,7 +568,8 @@ AST *parseWriteStmt()
     return ast_write_stmt(write, exp);
 }
 
-AST *parseSkipStmt() // Unfinished
+// parse skip statement and build an AST
+AST *parseSkipStmt()
 {
     token skip = tok;
     eat(skipsym);
@@ -570,6 +577,7 @@ AST *parseSkipStmt() // Unfinished
     return ast_skip_stmt(skip);
 }
 
+// relational operation checker, if token matches a relational operation return true
 static bool rel_op_check(token_type tok)
 {
     for (int i = eqop; i <= geqop; i++) // loop through the enumerations
